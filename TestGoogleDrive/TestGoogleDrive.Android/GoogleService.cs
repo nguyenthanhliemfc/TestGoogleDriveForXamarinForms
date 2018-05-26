@@ -29,6 +29,7 @@ using Android.Gms.Drive;
 using Android.Gms.Auth.Api;
 using Android.Support.V4.App;
 
+[assembly: Dependency(typeof(GoogleService))]
 namespace TestGoogleDrive.Droid
 {
     public class GoogleService : Java.Lang.Object,IGoogleService,
@@ -36,6 +37,7 @@ namespace TestGoogleDrive.Droid
         GoogleApiClient.IOnConnectionFailedListener
         
     {
+        public static GoogleService Current; 
         Context mContext;
         FragmentActivity mFragmentActivity;
 
@@ -49,14 +51,17 @@ namespace TestGoogleDrive.Droid
         EventHandler handlerSignIn;
         EventHandler handlerSignOut;
 
+        public static void Init(Context context, FragmentActivity fragmentActivity)
+        {
+            var obj = new GoogleService(context, fragmentActivity);
+            TestGoogleDrive.GoogleService.Current = obj;        //  interface
+            TestGoogleDrive.Droid.GoogleService.Current = obj; // class
+        }
         public GoogleService(Context context, FragmentActivity fragmentActivity)
         {
             mContext = context;
             mFragmentActivity = fragmentActivity;
-            TestGoogleDrive.GoogleService.Current = this;
-        }
-        public void Init()
-        {
+
             // [START configure_signin]
             // Configure sign-in to request the user's ID, email address, and basic
             // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
@@ -298,6 +303,5 @@ namespace TestGoogleDrive.Droid
                 });
             }
         }
-    }
-
+    } 
 }

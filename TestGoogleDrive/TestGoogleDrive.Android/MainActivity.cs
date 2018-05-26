@@ -25,19 +25,14 @@ namespace TestGoogleDrive.Droid
         DataScheme = "com.companyname.TestGoogleDrive")]
 
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
-    {
-        GoogleService googleService;
-
+    {        
         protected override void OnCreate(Bundle bundle)
         {
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;
 
             base.OnCreate(bundle);
-
-            googleService = new GoogleService(this, this);
-            googleService.Init();
-
+            GoogleService.Init(this,this);            
             global::Xamarin.Forms.Forms.Init(this, bundle);
             LoadApplication(new App());            
         }
@@ -50,7 +45,7 @@ namespace TestGoogleDrive.Droid
             switch (requestCode)
             {
                 case GoogleService.REQUEST_CODE_SIGNIN:
-                    googleService.ProcessActivityResult(requestCode, resultCode, data);
+                    GoogleService.Current.ProcessActivityResult(requestCode, resultCode, data);
                     break;
                 default:
                     break;
