@@ -16,17 +16,20 @@ namespace TestGoogleDrive
 
 		protected override void OnStart ()
 		{
-			// Handle when your app starts
+            // Handle when your app starts
+            GoogleService.Current.SilentSignIn();
 		}
 
 		protected override void OnSleep ()
 		{
-			// Handle when your app sleeps
+            // Handle when your app sleeps
+            GoogleService.Current.Disconnect();
 		}
 
 		protected override void OnResume ()
 		{
-			// Handle when your app resumes
-		}
+            // Handle when your app resumes
+            GoogleService.Current.SilentSignIn();
+        }
 	}
 }

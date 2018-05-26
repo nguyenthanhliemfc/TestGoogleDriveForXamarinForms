@@ -9,6 +9,13 @@
     	<Label Text="Welcome to Xamarin.Forms!" 
            HorizontalOptions="Center"
            VerticalOptions="CenterAndExpand" />
+        <Label x:Name="SignInResult" ></Label>
+        <Button Text="UpdateSignResult" Clicked="Button_Clicked_1"></Button>
+        <Button Text="SignIn" Clicked="Button_Clicked"></Button>
+        <Button Text="SignOut" Clicked="Button_Clicked_SignOut" ></Button>
+        <Button Text="Revoke" Clicked="Button_Clicked_Revoke" ></Button>
+        <Button Text="Connect" Clicked="Button_Clicked_DriveConnect" ></Button>
+        <Button Text="Disconnect" Clicked="Button_Clicked_DriveDisconnect" ></Button>
+        <Button Text="NewDriveContent" Clicked="Button_Clicked_NewDriveContent" ></Button>
     </StackLayout>
-
 </ContentPage>
