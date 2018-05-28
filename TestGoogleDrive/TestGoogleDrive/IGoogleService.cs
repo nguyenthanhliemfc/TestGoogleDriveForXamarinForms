@@ -6,15 +6,11 @@ namespace TestGoogleDrive
 {
     public interface IGoogleService
     {
-        void SilentSignIn();
-        void SignIn(EventHandler eventHandler);
-        void SignOut(EventHandler eventHandler);
-        void RevokeAccess();
-        
-        string GetAccount();
-
+        void ChangeAccount();
         void Connect();
         void Disconnect();
         void NewDriveContent();
+
+        void Test();
     }
 }

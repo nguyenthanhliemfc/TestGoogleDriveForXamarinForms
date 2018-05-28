@@ -17,7 +17,7 @@ namespace TestGoogleDrive
 		protected override void OnStart ()
 		{
             // Handle when your app starts
-            GoogleService.Current.SilentSignIn();
+            GoogleService.Current.Connect();
 		}
 
 		protected override void OnSleep ()
@@ -29,7 +29,7 @@ namespace TestGoogleDrive
 		protected override void OnResume ()
 		{
             // Handle when your app resumes
-            GoogleService.Current.SilentSignIn();
+            GoogleService.Current.Connect();
         }
 	}
 }

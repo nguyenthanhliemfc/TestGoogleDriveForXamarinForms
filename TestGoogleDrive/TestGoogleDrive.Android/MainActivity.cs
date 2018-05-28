@@ -44,7 +44,7 @@ namespace TestGoogleDrive.Droid
             Log.Debug("MainActivity", "onActivityResult:" + requestCode + ":" + resultCode + ":" + data);
             switch (requestCode)
             {
-                case GoogleService.REQUEST_CODE_SIGNIN:
+                case GoogleService.REQUEST_CODE_RESOLUTION:
                     GoogleService.Current.ProcessActivityResult(requestCode, resultCode, data);
                     break;
                 default:
