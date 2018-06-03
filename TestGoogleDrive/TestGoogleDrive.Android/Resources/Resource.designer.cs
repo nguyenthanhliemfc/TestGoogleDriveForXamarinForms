@@ -26,6 +26,8 @@ namespace TestGoogleDrive.Droid
 		
 		public static void UpdateIdValues()
 		{
+			global::PCLStorage.Resource.String.ApplicationName = global::TestGoogleDrive.Droid.Resource.String.ApplicationName;
+			global::PCLStorage.Resource.String.Hello = global::TestGoogleDrive.Droid.Resource.String.Hello;
 			global::Xamarin.Forms.Platform.Android.Resource.Attribute.actionBarSize = global::TestGoogleDrive.Droid.Resource.Attribute.actionBarSize;
 		}
 		
@@ -4099,6 +4101,12 @@ namespace TestGoogleDrive.Droid
 		
 		public partial class String
 		{
+			
+			// aapt resource value: 0x7f09004e
+			public const int ApplicationName = 2131296334;
+			
+			// aapt resource value: 0x7f09004d
+			public const int Hello = 2131296333;
 			
 			// aapt resource value: 0x7f090026
 			public const int abc_action_bar_home_description = 2131296294;

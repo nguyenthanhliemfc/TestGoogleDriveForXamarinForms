@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TestGoogleDrive
 {
@@ -9,8 +10,13 @@ namespace TestGoogleDrive
         void ChangeAccount();
         void Connect();
         void Disconnect();
-        void NewDriveContent();
+        Task<bool> NewDriveContent(string folderDriveId);
+        Task<bool> NewDriveFolder(string folderDriveId,string folderName);
+               
+        void UploadFile(string folderDriveId,string fileName, System.IO.Stream stream);
 
-        void Test();
+        Task<List<TestGoogleDrive.Metadata>> GetChildrenInFolder(string folderDriveId);
     }
+
+
 }

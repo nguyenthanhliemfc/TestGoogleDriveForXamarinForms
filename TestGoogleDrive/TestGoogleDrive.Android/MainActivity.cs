@@ -51,8 +51,13 @@ namespace TestGoogleDrive.Droid
                     break;
             }
             
-        }     
-       
+        }
+
+        protected override void OnStop()
+        {
+            base.OnStop();
+        }
+
     }
 }
 
