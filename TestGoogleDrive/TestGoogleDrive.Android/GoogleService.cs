@@ -156,7 +156,6 @@ namespace TestGoogleDrive.Droid
             if (mGoogleApiClient != null && mGoogleApiClient.IsConnected)
             {
                 mGoogleApiClient.Disconnect();
-
             }
         }
 
@@ -209,34 +208,7 @@ namespace TestGoogleDrive.Droid
                 
             });
             return res;
-        }
-
-        private class NewDriveContentsResultCallback : Java.Lang.Object, IResultCallback
-        {
-            public GoogleService Activity { get; set; }
-
-            public void OnResult(Java.Lang.Object result)
-            {
-                var contentResults = (result).JavaCast<IDriveApiDriveContentsResult>();
-                if (!contentResults.Status.IsSuccess) // handle the error
-                    return;
-
-                Task.Run(() =>
-                {
-                    var writer = new OutputStreamWriter(contentResults.DriveContents.OutputStream);
-                    writer.Write("Stack Overflow");
-
-                    writer.Close();
-                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                           .SetTitle("New Text File")
-                           .SetMimeType("text/plain")
-                           .Build();
-
-
-                    DriveClass.DriveApi.GetRootFolder(Activity.mGoogleApiClient).CreateFile(Activity.mGoogleApiClient, changeSet, contentResults.DriveContents);
-                });
-            }
-        }
+        }       
 
         public IDriveFolder GetRootFolder()
         {
@@ -244,19 +216,49 @@ namespace TestGoogleDrive.Droid
         }      
        
 
-        public void UploadFile(string folderDriveId,string fileName, System.IO.Stream stream)
+        public Task<bool> UploadFile(string folderDriveId,string fileName, System.IO.Stream stream)
         {
-            if (!mGoogleApiClient.IsConnected)
-                return;
-
-            DriveClass.DriveApi.NewDriveContents(mGoogleApiClient).SetResultCallback(
-                new UploadResultCallback
+            var result = Task.Run<bool>(() =>
+            {
+                try
                 {
-                    FolderDriveId = folderDriveId,
-                    FileName = fileName,
-                    Stream = stream,
-                    GoogleApiClient = mGoogleApiClient
-                });
+                    IDriveApiDriveContentsResult driveApiDriveContentsResult = (DriveClass.DriveApi.NewDriveContents(mGoogleApiClient).Await()).JavaCast<IDriveApiDriveContentsResult>();
+
+                    if (!driveApiDriveContentsResult.Status.IsSuccess) // handle the error
+                        throw new System.Exception(driveApiDriveContentsResult.ToString());
+
+                    stream.CopyTo(driveApiDriveContentsResult.DriveContents.OutputStream);
+                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder().SetTitle(fileName).Build();
+
+                    IDriveFolder driveFolder = null;
+                    if (string.IsNullOrEmpty(folderDriveId))
+                    {
+                        driveFolder = DriveClass.DriveApi.GetRootFolder(mGoogleApiClient);
+                    }
+                    else
+                    {
+                        IDriveApiDriveIdResult driveApiDriveIdResult = (DriveClass.DriveApi.FetchDriveId(mGoogleApiClient, folderDriveId).Await()).JavaCast<IDriveApiDriveIdResult>();
+                        if (!driveApiDriveIdResult.Status.IsSuccess) // handle the error
+                            throw new System.Exception(driveApiDriveIdResult.ToString());
+
+                        driveFolder = driveApiDriveIdResult.DriveId.AsDriveFolder();
+                    }
+
+                    IDriveFolderDriveFileResult driveFolderDriveFileResult =
+                        (driveFolder.CreateFile(mGoogleApiClient, changeSet, driveApiDriveContentsResult.DriveContents).Await()).JavaCast<IDriveFolderDriveFileResult>();
+
+                    if(!driveFolderDriveFileResult.Status.IsSuccess)
+                        throw new System.Exception(driveFolderDriveFileResult.ToString());
+
+                    return true;
+                }
+                catch (System.Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex.Message);
+                    return false;
+                }
+            });
+            return result;
         }
 
         private class UploadResultCallback : Java.Lang.Object, IResultCallback

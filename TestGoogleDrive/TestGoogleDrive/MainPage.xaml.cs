@@ -28,21 +28,9 @@ namespace TestGoogleDrive
 
             if(metadata.IsFolder)
             {
-                try
-                {
-                    var ret = GoogleService.Current.GetChildrenInFolder(metadata.DriveId).Result;
-                    Device.BeginInvokeOnMainThread(() =>
-                    {
-                        ListDrive.ItemsSource = ret;
-
-                        metadatas.Push(metadata);
-                        UpdateGDrivePath();
-                    });
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(ex.Message);
-                }
+                metadatas.Push(metadata);
+                UpdateGDrivePath();
+                UpdateGDriveList();
             }
             else
             {
@@ -67,9 +55,9 @@ namespace TestGoogleDrive
         }
 
 
-        private void Button_Clicked_Folder(object sender, EventArgs e)
+        private async void Button_Clicked_Folder(object sender, EventArgs e)
         {
-            bool result = GoogleService.Current.NewDriveFolder(GetCurrGDriveId(), "NewFolder").Result;
+            bool result = await GoogleService.Current.NewDriveFolder(GetCurrGDriveId(), "NewFolder");
             if(result)
                 UpdateGDriveList();
                       
@@ -82,11 +70,12 @@ namespace TestGoogleDrive
         private async void Button_Clicked_3(object sender, EventArgs e)
         {
             var ret = await Plugin.FilePicker.CrossFilePicker.Current.PickFile();
-
             if (ret == null)
                 return;
 
-            GoogleService.Current.UploadFile(GetCurrGDriveId(), ret.FileName,ret.GetStream());
+            var result = await GoogleService.Current.UploadFile(GetCurrGDriveId(), ret.FileName, ret.GetStream());
+            if(result)
+                UpdateGDriveList();
         }
 
         private void Button_Clicked(object sender, EventArgs e)
@@ -102,16 +91,16 @@ namespace TestGoogleDrive
 
         }
 
-        private void Button_Clicked_File(object sender, EventArgs e)
+        private async void Button_Clicked_File(object sender, EventArgs e)
         {
-            var result = GoogleService.Current.NewDriveContent(GetCurrGDriveId()).Result;
+            var result = await GoogleService.Current.NewDriveContent(GetCurrGDriveId());
             if (result)
                 UpdateGDriveList();
         }
 
-        private void UpdateGDriveList()
+        private async void UpdateGDriveList()
         {           
-            var ret = GoogleService.Current.GetChildrenInFolder(GetCurrGDriveId()).Result;
+            var ret = await GoogleService.Current.GetChildrenInFolder(GetCurrGDriveId());
             ListDrive.ItemsSource = ret;
         }
 
