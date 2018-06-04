@@ -261,45 +261,6 @@ namespace TestGoogleDrive.Droid
             return result;
         }
 
-        private class UploadResultCallback : Java.Lang.Object, IResultCallback
-        {
-            public string FolderDriveId { get; set; }
-            public string FileName { get; set; }
-            public System.IO.Stream Stream { get; set; }
-            public GoogleApiClient GoogleApiClient { get; set; }
-
-            public void OnResult(Java.Lang.Object result)
-            {
-                var contentResults = (result).JavaCast<IDriveApiDriveContentsResult>();
-                if (!contentResults.Status.IsSuccess) // handle the error
-                    return;
-
-                Task.Run(() =>
-                {
-                    Stream.CopyTo(contentResults.DriveContents.OutputStream);
-                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder().SetTitle(FileName).Build();
-
-                    IDriveFolder driveFolder = null;
-                    if (string.IsNullOrEmpty(FolderDriveId))
-                    {
-                        driveFolder = DriveClass.DriveApi.GetRootFolder(GoogleApiClient);
-                    }
-                    else
-                    {
-                        IDriveApiDriveIdResult res = (DriveClass.DriveApi.FetchDriveId(GoogleApiClient, FolderDriveId).Await()).JavaCast<IDriveApiDriveIdResult>();
-                        if (!res.Status.IsSuccess) // handle the error
-                            return;
-
-                        driveFolder = res.DriveId.AsDriveFolder();
-                    }
-
-                    IDriveFolderDriveFileResult driveFolderDriveFileResult = 
-                        (driveFolder.CreateFile(GoogleApiClient, changeSet, contentResults.DriveContents).Await()).JavaCast<IDriveFolderDriveFileResult>();
-                    
-                });
-            }
-        }
-
         public void UploadAll(string folderDriveId)
         {
             if (!mGoogleApiClient.IsConnected)
@@ -307,21 +268,17 @@ namespace TestGoogleDrive.Droid
 
             Task.Run(() =>
             {
-                IDriveFolder driveFolder = null;
-                if (string.IsNullOrEmpty(folderDriveId))
+                try
                 {
-                    driveFolder = DriveClass.DriveApi.GetRootFolder(mGoogleApiClient);
+                    IDriveFolder driveFolder = FetchDriveFolder(folderDriveId);
+                    UploadAll(PCLStorage.FileSystem.Current.LocalStorage, driveFolder);
                 }
-                else
+                catch (System.Exception ex)
                 {
-                    IDriveApiDriveIdResult result = (DriveClass.DriveApi.FetchDriveId(mGoogleApiClient, folderDriveId).Await()).JavaCast<IDriveApiDriveIdResult>();
-                    if (!result.Status.IsSuccess) // handle the error
-                        return;
-
-                    driveFolder = result.DriveId.AsDriveFolder();
+                    System.Diagnostics.Debug.WriteLine(ex.Message);
+                    return;
                 }
-
-                UploadAll(PCLStorage.FileSystem.Current.LocalStorage, driveFolder);
+                
             });
         }
         public void UploadAll(PCLStorage.IFolder folder, IDriveFolder driveFolder)
@@ -358,21 +315,8 @@ namespace TestGoogleDrive.Droid
                 List<TestGoogleDrive.Metadata> metadatas = new List<TestGoogleDrive.Metadata>();
                 try
                 {
-                    
-                    IDriveFolder driveFolder = null;
-                    if (string.IsNullOrEmpty(folderDriveId))
-                    {
-                        driveFolder = DriveClass.DriveApi.GetRootFolder(mGoogleApiClient);
-                    }
-                    else
-                    {
-                        IDriveApiDriveIdResult result = (DriveClass.DriveApi.FetchDriveId(mGoogleApiClient, folderDriveId).Await()).JavaCast<IDriveApiDriveIdResult>();
-                        if (!result.Status.IsSuccess) // handle the error
-                            throw new System.Exception(result.ToString());
 
-                        driveFolder = result.DriveId.AsDriveFolder();
-                    }
-
+                    IDriveFolder driveFolder = FetchDriveFolder(folderDriveId);
                     IDriveApiMetadataBufferResult driveApiMetadataBufferResult = (driveFolder.ListChildren(mGoogleApiClient).Await()).JavaCast<IDriveApiMetadataBufferResult>();
                     if (!driveApiMetadataBufferResult.Status.IsSuccess) // handle the error
                         throw new System.Exception(driveApiMetadataBufferResult.ToString());
@@ -403,25 +347,9 @@ namespace TestGoogleDrive.Droid
             {
                 try
                 {
-                    IDriveFolder driveFolder = null;
-                    if (string.IsNullOrEmpty(folderDriveId))
-                    {
-                        driveFolder = DriveClass.DriveApi.GetRootFolder(mGoogleApiClient);
-                    }
-                    else
-                    {
-                        IDriveApiDriveIdResult result = (DriveClass.DriveApi.FetchDriveId(mGoogleApiClient, folderDriveId).Await()).JavaCast<IDriveApiDriveIdResult>();
-                        if (!result.Status.IsSuccess) // handle the error
-                            throw new System.Exception(result.ToString());
-
-                        driveFolder = result.DriveId.AsDriveFolder();
-                    }
-                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder().SetTitle(folderName).Build();
-                    IDriveFolderDriveFolderResult driveFolderDriveFolderResult = (driveFolder.CreateFolder(mGoogleApiClient, changeSet).Await()).JavaCast<IDriveFolderDriveFolderResult>();
-
-                    if(!driveFolderDriveFolderResult.Status.IsSuccess)
-                        throw new System.Exception(driveFolderDriveFolderResult.ToString());
-
+                    IDriveFolder driveFolder = FetchDriveFolder(folderDriveId);
+                    IDriveFolder driveFolderNew = CreateDriveFolder(driveFolder, folderName);
+                    
                     return true;
                 }
                 catch (System.Exception ex)
@@ -432,6 +360,41 @@ namespace TestGoogleDrive.Droid
                 
             });
             return res;
+        }
+
+        /// <summary>
+        /// throws <exception cref="System.Exception">System.Exception  when fail</exception>
+        /// </summary>
+        private IDriveFolder FetchDriveFolder(string folderDriveId)
+        {
+            IDriveFolder driveFolder = null;
+            if (string.IsNullOrEmpty(folderDriveId))
+            {
+                driveFolder = DriveClass.DriveApi.GetRootFolder(mGoogleApiClient);
+            }
+            else
+            {
+                IDriveApiDriveIdResult result = (DriveClass.DriveApi.FetchDriveId(mGoogleApiClient, folderDriveId).Await()).JavaCast<IDriveApiDriveIdResult>();
+                if (!result.Status.IsSuccess) // handle the error
+                    throw new System.Exception(result.ToString());
+
+                driveFolder = result.DriveId.AsDriveFolder();
+            }
+            return driveFolder;
+        }
+
+        /// <summary>
+        /// throws <exception cref="System.Exception">System.Exception when fail</exception>
+        /// </summary>
+        private IDriveFolder CreateDriveFolder(IDriveFolder driveFolder, string folderName)
+        {
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().SetTitle(folderName).Build();
+            IDriveFolderDriveFolderResult driveFolderDriveFolderResult = (driveFolder.CreateFolder(mGoogleApiClient, changeSet).Await()).JavaCast<IDriveFolderDriveFolderResult>();
+
+            if (!driveFolderDriveFolderResult.Status.IsSuccess)
+                throw new System.Exception(driveFolderDriveFolderResult.ToString());
+
+            return driveFolderDriveFolderResult.DriveFolder;
         }
 
 
