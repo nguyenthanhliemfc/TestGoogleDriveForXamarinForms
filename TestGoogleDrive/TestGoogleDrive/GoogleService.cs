@@ -9,7 +9,8 @@ namespace TestGoogleDrive
     {
         public static IGoogleService Current;
     }
-    public class Metadata
+
+    public class GoogleDriveMetadata
     {
 
         public bool IsShared { get; set; }
@@ -44,11 +45,4 @@ namespace TestGoogleDrive
         public string EmbedLink { get; set; }
         public bool IsDataValid { get; set; }
     }
-
-    public class ListEventArgs : EventArgs
-    {
-        public List<Metadata> Metadatas { get; set; }
-        public string FolderDriveId { get; set; }
-    }
-    public delegate void ListEventHandler(object sender, ListEventArgs e);
 }

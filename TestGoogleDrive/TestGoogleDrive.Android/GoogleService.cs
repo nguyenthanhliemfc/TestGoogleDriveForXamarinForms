@@ -308,11 +308,11 @@ namespace TestGoogleDrive.Droid
                 UploadAll(item, result.DriveFolder);
             }
         }
-        public Task<List<Metadata>> GetChildrenInFolder(string folderDriveId)
+        public Task<List<GoogleDriveMetadata>> GetChildrenInFolder(string folderDriveId)
         {
-            var ret = Task.Run<List<Metadata>>(() =>
+            var ret = Task.Run<List<GoogleDriveMetadata>>(() =>
             {
-                List<TestGoogleDrive.Metadata> metadatas = new List<TestGoogleDrive.Metadata>();
+                List<TestGoogleDrive.GoogleDriveMetadata> metadatas = new List<TestGoogleDrive.GoogleDriveMetadata>();
                 try
                 {
 
@@ -326,7 +326,7 @@ namespace TestGoogleDrive.Droid
                         if (item.IsTrashed)
                             continue;
 
-                        TestGoogleDrive.Metadata metadata = ConvertMetadata(item);
+                        TestGoogleDrive.GoogleDriveMetadata metadata = ConvertMetadata(item);
                         metadatas.Add(metadata);
                     }
                     return metadatas;
@@ -398,9 +398,9 @@ namespace TestGoogleDrive.Droid
         }
 
 
-        static public TestGoogleDrive.Metadata ConvertMetadata(Android.Gms.Drive.Metadata item)
+        static private TestGoogleDrive.GoogleDriveMetadata ConvertMetadata(Android.Gms.Drive.Metadata item)
         {
-            TestGoogleDrive.Metadata metadata = new TestGoogleDrive.Metadata()
+            TestGoogleDrive.GoogleDriveMetadata metadata = new TestGoogleDrive.GoogleDriveMetadata()
             {
                 IsShared = item.IsShared,
                 IsStarred = item.IsStarred,

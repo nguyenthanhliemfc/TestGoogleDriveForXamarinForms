@@ -14,7 +14,7 @@ namespace TestGoogleDrive
         Task<bool> NewDriveContent(string folderDriveId);
         Task<bool> NewDriveFolder(string folderDriveId,string folderName);
         Task<bool> UploadFile(string folderDriveId,string fileName, System.IO.Stream stream);
-        Task<List<TestGoogleDrive.Metadata>> GetChildrenInFolder(string folderDriveId);
+        Task<List<TestGoogleDrive.GoogleDriveMetadata>> GetChildrenInFolder(string folderDriveId);
     }
 
 
